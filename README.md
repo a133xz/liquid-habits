@@ -32,16 +32,6 @@ A premium, liquid-glass aesthetic habit tracker built with Vue 3, Vite, and PWA 
 
 ## How to Install on iPhone
 
-To install this on your iPhone, the app needs to be served over a network (HTTPS is preferred for PWAs, but local IP works for testing sometimes).
-
-1. **Local Network Method**:
-   - Run `npm run dev -- --host`
-   - Note the Network IP address shown (e.g., `http://192.168.1.x:5173`)
-   - Open Safari on your iPhone and visit that address.
-   - Tap the "Share" button (box with upward arrow).
-   - Scroll down and tap "Add to Home Screen".
-
-2. **Deployment Method (Recommended)**:
-   - Deploy this folder to Vercel, Netlify, or GitHub Pages.
-   - Visit the URL on your iPhone.
-   - Add to Home Screen.
+- Open Safari on your iPhone and visit that address.
+- Tap the "Share" button (box with upward arrow).
+- Scroll down and tap "Add to Home Screen".
