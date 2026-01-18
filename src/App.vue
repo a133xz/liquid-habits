@@ -92,6 +92,7 @@ const exportData = () => {
           :key="habit.id" 
           :habit="habit" 
           @log="logHabit"
+          @delete="deleteHabit"
         />
       </div>
     </main>
@@ -151,15 +152,34 @@ const exportData = () => {
 }
 
 header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
-  padding-top: 10px; /* Safe area top padding adjustment if needed */
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  /* Glass effect for header */
+  background: var(--bg-color); /* Fallback */
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  /* Expand header to full width to cover scroll area */
+  margin-left: -20px;
+  margin-right: -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 @media (max-width: 480px) {
   header {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
     margin-bottom: 24px;
   }
 }

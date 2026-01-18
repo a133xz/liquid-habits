@@ -1,6 +1,6 @@
 <script setup>
-import { computed } from 'vue'
-import { useMediaQuery } from '@vueuse/core'
+import { computed, ref } from 'vue'
+import { useMediaQuery, onLongPress } from '@vueuse/core'
 
 const props = defineProps({
   habit: {
@@ -9,7 +9,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['log'])
+const emit = defineEmits(['log', 'delete'])
 
 // Responsive grid configuration
 const isMobile = useMediaQuery('(max-width: 480px)')
@@ -20,10 +20,23 @@ const totalDots = computed(() => columns.value * rows)
 const filledCount = computed(() => props.habit.logs.length)
 // Determine color (default green if not specified)
 const color = computed(() => props.habit.color || '#2ed573')
+
+const cardRef = ref(null)
+
+// Long press to delete
+onLongPress(cardRef, () => {
+  // Vibration for feedback
+  if (navigator.vibrate) navigator.vibrate([50, 50, 50])
+  emit('delete', props.habit.id)
+}, {
+  delay: 800, // 800ms hold time
+  modifiers: { prevent: true } // Attempt to prevent other interactions
+})
+
 </script>
 
 <template>
-  <div class="habit-card" @click="$emit('log', habit.id)">
+  <div class="habit-card" ref="cardRef" @click="$emit('log', habit.id)">
     <div class="card-header">
       <div class="habit-info">
         <div class="habit-icon">
