@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useStorage } from '@vueuse/core'
+import draggable from 'vuedraggable'
 import HabitCard from './components/HabitCard.vue'
 
 // Store habits in localStorage
@@ -86,21 +87,25 @@ const exportData = () => {
         <button class="cta-btn" @click="showAddModal = true">Create Habit</button>
       </div>
       
-      <div class="habit-grid" v-else>
-        <HabitCard 
-          v-for="habit in habits" 
-          :key="habit.id" 
-          :habit="habit" 
-          @log="logHabit"
-          @delete="deleteHabit"
-        />
-      </div>
+      <draggable
+        v-else
+        v-model="habits"
+        item-key="id"
+        tag="div"
+        class="habit-grid"
+        handle=".habit-drag-handle"
+        :animation="200"
+        ghost-class="habit-card-ghost"
+      >
+        <template #item="{ element }">
+          <HabitCard
+            :habit="element"
+            @log="logHabit"
+            @delete="deleteHabit"
+          />
+        </template>
+      </draggable>
     </main>
-
-    <!-- Floating Action Button (Mobile) -->
-    <button class="fab" @click="showAddModal = true">
-      +
-    </button>
 
     <!-- Add Habit Modal -->
     <div v-if="showAddModal" class="modal-backdrop" @click.self="showAddModal = false">
@@ -140,14 +145,14 @@ const exportData = () => {
   width: 100%;
   margin: 0 auto;
   padding: 20px;
-  padding-bottom: 120px; /* Space for FAB */
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
   box-sizing: border-box; /* Ensure padding doesn't overflow */
 }
 
 @media (max-width: 480px) {
   .app-container {
     padding: 16px;
-    padding-bottom: 100px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
 }
 
@@ -249,39 +254,6 @@ main {
   border-radius: 30px;
   font-weight: 600;
   font-size: 16px;
-}
-
-.fab {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
-  background: linear-gradient(135deg, var(--accent-color), #2ed573);
-  box-shadow: 0 10px 30px rgba(46, 213, 115, 0.4);
-  color: black;
-  font-size: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  transition: transform 0.2s;
-  /* Safe area for iphone */
-  margin-bottom: env(safe-area-inset-bottom);
-}
-
-@media (max-width: 480px) {
-  .fab {
-    bottom: 20px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-  }
-}
-
-.fab:active {
-  transform: scale(0.9);
 }
 
 /* Modal */
@@ -389,5 +361,12 @@ h2 {
 
 .save-btn:active {
   opacity: 0.8;
+}
+</style>
+
+<style>
+/* Sortable ghost is cloned outside scoped HabitCard styles */
+.habit-card-ghost {
+  opacity: 0.45;
 }
 </style>

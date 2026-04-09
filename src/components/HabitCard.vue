@@ -36,32 +36,49 @@ onLongPress(cardRef, () => {
 </script>
 
 <template>
-  <div class="habit-card" ref="cardRef" @click="$emit('log', habit.id)">
-    <div class="card-header">
-      <div class="habit-info">
-        <div class="habit-icon">
-          <span>{{ habit.name.charAt(0).toUpperCase() }}</span>
+  <div class="habit-card">
+    <button
+      type="button"
+      class="habit-drag-handle"
+      aria-label="Drag to reorder"
+      title="Drag to reorder"
+      @click.stop
+    >
+      <span class="handle-bar" aria-hidden="true" />
+      <span class="handle-bar" aria-hidden="true" />
+      <span class="handle-bar" aria-hidden="true" />
+    </button>
+    <div
+      class="habit-card-main"
+      ref="cardRef"
+      @click="$emit('log', habit.id)"
+    >
+      <div class="card-header">
+        <div class="habit-info">
+          <div class="habit-icon">
+            <span>{{ habit.name.charAt(0).toUpperCase() }}</span>
+          </div>
+          <h3 class="habit-name">{{ habit.name }}</h3>
         </div>
-        <h3 class="habit-name">{{ habit.name }}</h3>
+        <div class="habit-stats">
+          <span class="count">{{ filledCount }}</span>
+          <span class="unit">h</span>
+        </div>
       </div>
-      <div class="habit-stats">
-        <span class="count">{{ filledCount }}</span>
-        <span class="unit">h</span>
+
+      <div class="grid-container">
+        <div
+          v-for="i in totalDots"
+          :key="i"
+          class="grid-dot"
+          :style="{
+            backgroundColor: i <= filledCount ? color : 'rgba(255,255,255,0.05)',
+            boxShadow: i <= filledCount ? `0 0 8px ${color}` : 'none'
+          }"
+        ></div>
       </div>
     </div>
-    
-    <div class="grid-container">
-      <div 
-        v-for="i in totalDots" 
-        :key="i" 
-        class="grid-dot"
-        :style="{ 
-          backgroundColor: i <= filledCount ? color : 'rgba(255,255,255,0.05)',
-          boxShadow: i <= filledCount ? `0 0 8px ${color}` : 'none'
-        }"
-      ></div>
-    </div>
-    
+
     <div class="card-glow" :style="{ background: color }"></div>
   </div>
 </template>
@@ -69,20 +86,63 @@ onLongPress(cardRef, () => {
 <style scoped>
 .habit-card {
   position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 24px;
   padding: 24px;
+  padding-left: 12px;
   overflow: hidden;
   transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-.habit-card:active {
+.habit-drag-handle {
+  flex-shrink: 0;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 28px;
+  min-height: 44px;
+  padding: 8px 6px;
+  margin: -4px 0;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.habit-drag-handle:active {
+  cursor: grabbing;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.handle-bar {
+  display: block;
+  height: 2px;
+  width: 100%;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.habit-card-main {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.habit-card:has(.habit-card-main:active) {
   transform: scale(0.98);
 }
 
@@ -178,6 +238,7 @@ onLongPress(cardRef, () => {
 @media (max-width: 480px) {
   .habit-card {
     padding: 16px;
+    padding-left: 10px;
     border-radius: 20px;
   }
   
