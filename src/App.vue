@@ -1,62 +1,111 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useStorage } from '@vueuse/core'
 import draggable from 'vuedraggable'
 import HabitCard from './components/HabitCard.vue'
 
-// Store habits in localStorage
 const habits = useStorage('my-liquid-habits', [])
 
-// Modal State
-const showAddModal = ref(false)
-const newHabitName = ref('')
-const newHabitColor = ref('#2ed573') // Default green
+const showModal = ref(false)
+const editingId = ref(null)
+const formName = ref('')
+const formColor = ref('#2ed573')
+const formHours = ref(0)
 
 const colors = [
-  '#2ed573', // Green
-  '#ff4757', // Red
-  '#2f3542', // Grey
-  '#ffa502', // Orange
-  '#1e90ff', // Blue
-  '#3742fa', // Indigo
-  '#ff6b81'  // Pink
+  '#2ed573',
+  '#ff4757',
+  '#2f3542',
+  '#ffa502',
+  '#1e90ff',
+  '#3742fa',
+  '#ff6b81'
 ]
 
-const addHabit = () => {
-  if (!newHabitName.value.trim()) return
-  
-  habits.value.push({
-    id: Date.now(),
-    name: newHabitName.value,
-    color: newHabitColor.value,
-    logs: []
-  })
-  
-  newHabitName.value = ''
-  showAddModal.value = false
+const isEditing = computed(() => editingId.value !== null)
+
+const normalizeHours = (value) => Math.max(0, Math.floor(Number(value) || 0))
+
+const resizeLogs = (logs, count) => {
+  const n = normalizeHours(count)
+  if (n <= logs.length) return logs.slice(0, n)
+  const next = [...logs]
+  while (next.length < n) next.push(new Date().toISOString())
+  return next
+}
+
+const openCreateModal = () => {
+  editingId.value = null
+  formName.value = ''
+  formColor.value = '#2ed573'
+  formHours.value = 0
+  showModal.value = true
+}
+
+const openEditModal = (id) => {
+  const habit = habits.value.find(h => h.id === id)
+  if (!habit) return
+  editingId.value = id
+  formName.value = habit.name
+  formColor.value = habit.color || '#2ed573'
+  formHours.value = habit.logs.length
+  showModal.value = true
+}
+
+const closeModal = () => {
+  showModal.value = false
+  editingId.value = null
+  formName.value = ''
+  formHours.value = 0
+}
+
+const adjustHours = (delta) => {
+  formHours.value = Math.max(0, normalizeHours(formHours.value) + delta)
+}
+
+const saveHabit = () => {
+  if (!formName.value.trim()) return
+
+  const hours = normalizeHours(formHours.value)
+
+  if (isEditing.value) {
+    const habit = habits.value.find(h => h.id === editingId.value)
+    if (!habit) return
+    habit.name = formName.value.trim()
+    habit.color = formColor.value
+    habit.logs = resizeLogs(habit.logs, hours)
+  } else {
+    habits.value.push({
+      id: Date.now(),
+      name: formName.value.trim(),
+      color: formColor.value,
+      logs: resizeLogs([], hours)
+    })
+  }
+
+  closeModal()
 }
 
 const logHabit = (id) => {
   const habit = habits.value.find(h => h.id === id)
   if (habit) {
-    // Add current timestamp
     habit.logs.push(new Date().toISOString())
-    // Trigger haptic feedback if available for PWA feel
     if (navigator.vibrate) navigator.vibrate(10)
   }
 }
 
-const deleteHabit = (id) => {
-    if(confirm('Delete this habit?')) {
-        habits.value = habits.value.filter(h => h.id !== id)
-    }
+const deleteHabit = () => {
+  if (!isEditing.value) return
+  if (!confirm('Delete this habit?')) return
+  habits.value = habits.value.filter(h => h.id !== editingId.value)
+  closeModal()
 }
 
 const exportData = () => {
   const dataStr = JSON.stringify(habits.value, null, 2)
   const blob = new Blob([dataStr], { type: "application/json" })
   const url = URL.createObjectURL(blob)
-  
+
   const link = document.createElement('a')
   link.href = url
   link.download = `liquid-habits-backup-${new Date().toISOString().slice(0, 10)}.json`
@@ -75,7 +124,7 @@ const exportData = () => {
         <button class="icon-btn" @click="exportData" title="Export Data">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         </button>
-        <button class="icon-btn" @click="showAddModal = true" title="Add Habit">
+        <button class="icon-btn" @click="openCreateModal" title="Add Habit">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         </button>
       </div>
@@ -84,9 +133,9 @@ const exportData = () => {
     <main>
       <div v-if="habits.length === 0" class="empty-state">
         <p>No habits yet. Start flowing.</p>
-        <button class="cta-btn" @click="showAddModal = true">Create Habit</button>
+        <button class="cta-btn" @click="openCreateModal">Create Habit</button>
       </div>
-      
+
       <draggable
         v-else
         v-model="habits"
@@ -101,39 +150,55 @@ const exportData = () => {
           <HabitCard
             :habit="element"
             @log="logHabit"
-            @delete="deleteHabit"
+            @edit="openEditModal"
           />
         </template>
       </draggable>
     </main>
 
-    <!-- Add Habit Modal -->
-    <div v-if="showAddModal" class="modal-backdrop" @click.self="showAddModal = false">
+    <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
       <div class="modal-content">
-        <h2>New Habit</h2>
-        <input 
-          v-model="newHabitName" 
-          type="text" 
+        <h2>{{ isEditing ? 'Edit Habit' : 'New Habit' }}</h2>
+        <input
+          v-model="formName"
+          type="text"
           placeholder="e.g. Tennis, Reading..."
           class="glass-input"
           autofocus
-          @keyup.enter="addHabit"
+          @keyup.enter="saveHabit"
         />
-        
+
+        <label class="field-label">Hours</label>
+        <div class="hours-control">
+          <button type="button" class="hours-btn" @click="adjustHours(-1)" aria-label="Decrease hours">−</button>
+          <input
+            v-model.number="formHours"
+            type="number"
+            min="0"
+            class="hours-input"
+            @keyup.enter="saveHabit"
+          />
+          <button type="button" class="hours-btn" @click="adjustHours(1)" aria-label="Increase hours">+</button>
+        </div>
+
         <div class="color-picker">
-          <div 
-            v-for="color in colors" 
-            :key="color" 
+          <div
+            v-for="color in colors"
+            :key="color"
             class="color-dot"
-            :style="{ background: color, border: newHabitColor === color ? '2px solid white' : 'none' }"
-            @click="newHabitColor = color"
+            :style="{ background: color, border: formColor === color ? '2px solid white' : 'none' }"
+            @click="formColor = color"
           ></div>
         </div>
 
         <div class="modal-actions">
-          <button class="cancel-btn" @click="showAddModal = false">Cancel</button>
-          <button class="save-btn" @click="addHabit">Create</button>
+          <button class="cancel-btn" @click="closeModal">Cancel</button>
+          <button class="save-btn" @click="saveHabit">{{ isEditing ? 'Save' : 'Create' }}</button>
         </div>
+
+        <button v-if="isEditing" type="button" class="delete-btn" @click="deleteHabit">
+          Delete habit
+        </button>
       </div>
     </div>
   </div>
@@ -146,7 +211,7 @@ const exportData = () => {
   margin: 0 auto;
   padding: 20px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
-  box-sizing: border-box; /* Ensure padding doesn't overflow */
+  box-sizing: border-box;
 }
 
 @media (max-width: 480px) {
@@ -166,12 +231,10 @@ header {
   padding-top: max(20px, env(safe-area-inset-top));
   padding-bottom: 20px;
   margin-bottom: 20px;
-  /* Glass effect for header */
-  background: var(--bg-color); /* Fallback */
+  background: var(--bg-color);
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  /* Expand header to full width to cover scroll area */
   margin-left: -20px;
   margin-right: -20px;
   padding-left: 20px;
@@ -256,7 +319,6 @@ main {
   font-size: 16px;
 }
 
-/* Modal */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -316,6 +378,64 @@ h2 {
   background: rgba(255,255,255,0.08);
 }
 
+.field-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.hours-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.hours-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.08);
+  color: white;
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hours-btn:active {
+  background: rgba(255,255,255,0.16);
+}
+
+.hours-input {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 12px;
+  border-radius: 14px;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  box-sizing: border-box;
+  -moz-appearance: textfield;
+}
+
+.hours-input::-webkit-outer-spin-button,
+.hours-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.hours-input:focus {
+  border-color: var(--accent-color);
+  background: rgba(255,255,255,0.08);
+}
+
 .color-picker {
   display: flex;
   gap: 12px;
@@ -362,10 +482,23 @@ h2 {
 .save-btn:active {
   opacity: 0.8;
 }
+
+.delete-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  background: transparent;
+  color: #ff4757;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.delete-btn:active {
+  opacity: 0.7;
+}
 </style>
 
 <style>
-/* Sortable ghost is cloned outside scoped HabitCard styles */
 .habit-card-ghost {
   opacity: 0.45;
 }

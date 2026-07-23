@@ -1,6 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { useMediaQuery, onLongPress } from '@vueuse/core'
+import { computed } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 
 const props = defineProps({
   habit: {
@@ -9,30 +9,32 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['log', 'delete'])
+const emit = defineEmits(['log', 'edit'])
 
-// Responsive grid configuration
 const isMobile = useMediaQuery('(max-width: 480px)')
-const columns = computed(() => isMobile.value ? 10 : 15)
+const baseColumns = computed(() => isMobile.value ? 10 : 15)
 const rows = 7
-const totalDots = computed(() => columns.value * rows)
 
 const filledCount = computed(() => props.habit.logs.length)
-// Determine color (default green if not specified)
+
+// Grow columns once the grid would be full so squares shrink and never stay completely filled
+const columns = computed(() => {
+  const base = baseColumns.value
+  const minDots = Math.max(base * rows, filledCount.value + 1)
+  return Math.max(base, Math.ceil(minDots / rows))
+})
+const totalDots = computed(() => columns.value * rows)
+
 const color = computed(() => props.habit.color || '#2ed573')
 
-const cardRef = ref(null)
+const onEdit = () => {
+  if (navigator.vibrate) navigator.vibrate(10)
+  emit('edit', props.habit.id)
+}
 
-// Long press to delete
-onLongPress(cardRef, () => {
-  // Vibration for feedback
-  if (navigator.vibrate) navigator.vibrate([50, 50, 50])
-  emit('delete', props.habit.id)
-}, {
-  delay: 800, // 800ms hold time
-  modifiers: { prevent: true } // Attempt to prevent other interactions
-})
-
+const onLog = () => {
+  emit('log', props.habit.id)
+}
 </script>
 
 <template>
@@ -48,11 +50,7 @@ onLongPress(cardRef, () => {
       <span class="handle-bar" aria-hidden="true" />
       <span class="handle-bar" aria-hidden="true" />
     </button>
-    <div
-      class="habit-card-main"
-      ref="cardRef"
-      @click="$emit('log', habit.id)"
-    >
+    <div class="habit-card-main">
       <div class="card-header">
         <div class="habit-info">
           <div class="habit-icon">
@@ -60,13 +58,33 @@ onLongPress(cardRef, () => {
           </div>
           <h3 class="habit-name">{{ habit.name }}</h3>
         </div>
-        <div class="habit-stats">
-          <span class="count">{{ filledCount }}</span>
-          <span class="unit">h</span>
+        <div class="habit-actions">
+          <div class="habit-stats">
+            <span class="count">{{ filledCount }}</span>
+            <span class="unit">h</span>
+          </div>
+          <button
+            type="button"
+            class="edit-btn"
+            aria-label="Edit habit"
+            title="Edit habit"
+            @click.stop="onEdit"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
         </div>
       </div>
 
-      <div class="grid-container">
+      <button
+        type="button"
+        class="grid-container"
+        aria-label="Log one hour"
+        title="Tap to log 1 hour"
+        @click="onLog"
+      >
         <div
           v-for="i in totalDots"
           :key="i"
@@ -76,7 +94,7 @@ onLongPress(cardRef, () => {
             boxShadow: i <= filledCount ? `0 0 8px ${color}` : 'none'
           }"
         ></div>
-      </div>
+      </button>
     </div>
 
     <div class="card-glow" :style="{ background: color }"></div>
@@ -139,10 +157,9 @@ onLongPress(cardRef, () => {
 .habit-card-main {
   flex: 1;
   min-width: 0;
-  cursor: pointer;
 }
 
-.habit-card:has(.habit-card-main:active) {
+.habit-card:has(.grid-container:active) {
   transform: scale(0.98);
 }
 
@@ -159,6 +176,7 @@ onLongPress(cardRef, () => {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .habit-icon {
@@ -182,7 +200,14 @@ onLongPress(cardRef, () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 150px;
+  max-width: 130px;
+}
+
+.habit-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .habit-stats {
@@ -190,7 +215,30 @@ onLongPress(cardRef, () => {
   background: rgba(0,0,0,0.2);
   padding: 6px 12px;
   border-radius: 20px;
-  flex-shrink: 0;
+}
+
+.edit-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.edit-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--text-primary);
+}
+
+.edit-btn:active {
+  transform: scale(0.94);
 }
 
 .count {
@@ -207,17 +255,24 @@ onLongPress(cardRef, () => {
 
 .grid-container {
   display: grid;
-  /* Use v-bind to inject the reactive column count */
   grid-template-columns: repeat(v-bind(columns), 1fr);
   gap: 6px;
   z-index: 2;
   position: relative;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: gap 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .grid-dot {
   aspect-ratio: 1;
   border-radius: 4px;
   transition: all 0.3s ease;
+  pointer-events: none;
 }
 
 .card-glow {
@@ -234,7 +289,6 @@ onLongPress(cardRef, () => {
   pointer-events: none;
 }
 
-/* Mobile Adjustments */
 @media (max-width: 480px) {
   .habit-card {
     padding: 16px;
@@ -248,11 +302,16 @@ onLongPress(cardRef, () => {
   
   .habit-name {
     font-size: 16px;
-    max-width: 120px;
+    max-width: 100px;
+  }
+
+  .edit-btn {
+    width: 32px;
+    height: 32px;
   }
   
   .grid-container {
-    gap: 4px; /* Tighter gap on mobile */
+    gap: 4px;
   }
   
   .grid-dot {
