@@ -308,6 +308,12 @@ main {
   padding-top: 20px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
   box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+main::-webkit-scrollbar {
+  display: none;
 }
 
 .habit-grid {
