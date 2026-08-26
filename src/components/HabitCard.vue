@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
+import { formatDistanceToNow } from 'date-fns'
 
 const props = defineProps({
   habit: {
@@ -26,6 +27,13 @@ const columns = computed(() => {
 const totalDots = computed(() => columns.value * rows)
 
 const color = computed(() => props.habit.color || '#2ed573')
+
+const lastLoggedLabel = computed(() => {
+  const logs = props.habit.logs
+  if (!logs?.length) return 'Not logged yet'
+  const last = logs[logs.length - 1]
+  return formatDistanceToNow(new Date(last), { addSuffix: true })
+})
 
 const onEdit = () => {
   if (navigator.vibrate) navigator.vibrate(10)
@@ -53,10 +61,13 @@ const onLog = () => {
     <div class="habit-card-main">
       <div class="card-header">
         <div class="habit-info">
-          <div class="habit-icon">
+          <div class="habit-icon" :style="{ background: color }">
             <span>{{ habit.name.charAt(0).toUpperCase() }}</span>
           </div>
-          <h3 class="habit-name">{{ habit.name }}</h3>
+          <div class="habit-meta">
+            <h3 class="habit-name">{{ habit.name }}</h3>
+            <p class="habit-last">{{ lastLoggedLabel }}</p>
+          </div>
         </div>
         <div class="habit-actions">
           <div class="habit-stats">
@@ -90,14 +101,11 @@ const onLog = () => {
           :key="i"
           class="grid-dot"
           :style="{
-            backgroundColor: i <= filledCount ? color : 'rgba(255,255,255,0.05)',
-            boxShadow: i <= filledCount ? `0 0 8px ${color}` : 'none'
+            backgroundColor: i <= filledCount ? color : 'var(--accent-soft)',
           }"
         ></div>
       </button>
     </div>
-
-    <div class="card-glow" :style="{ background: color }"></div>
   </div>
 </template>
 
@@ -106,18 +114,20 @@ const onLog = () => {
   position: relative;
   display: flex;
   align-items: stretch;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 24px;
-  padding: 24px;
-  padding-left: 12px;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  padding-left: 10px;
   overflow: hidden;
-  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: border-color 80ms linear;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.habit-card:hover {
+  border-color: var(--glass-highlight);
 }
 
 .habit-drag-handle {
@@ -132,17 +142,18 @@ const onLog = () => {
   padding: 8px 6px;
   margin: -4px 0;
   border: none;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
   color: var(--text-secondary);
   cursor: grab;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color 80ms linear, color 80ms linear;
 }
 
 .habit-drag-handle:active {
   cursor: grabbing;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border);
 }
 
 .handle-bar {
@@ -159,15 +170,11 @@ const onLog = () => {
   min-width: 0;
 }
 
-.habit-card:has(.grid-container:active) {
-  transform: scale(0.98);
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   z-index: 2;
   position: relative;
 }
@@ -180,27 +187,46 @@ const onLog = () => {
 }
 
 .habit-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: var(--text-primary);
-  flex-shrink: 0; 
+  font-size: 14px;
+  color: var(--on-accent);
+  flex-shrink: 0;
+  opacity: 0.95;
+}
+
+.habit-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .habit-name {
   margin: 0;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 130px;
+  max-width: 160px;
+}
+
+.habit-last {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
 }
 
 .habit-actions {
@@ -212,43 +238,43 @@ const onLog = () => {
 
 .habit-stats {
   text-align: right;
-  background: rgba(0,0,0,0.2);
-  padding: 6px 12px;
-  border-radius: 20px;
+  background: var(--accent-soft);
+  padding: 6px 10px;
+  border-radius: var(--radius);
 }
 
 .edit-btn {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border: none;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
   color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background-color 80ms linear, color 80ms linear;
   -webkit-tap-highlight-color: transparent;
 }
 
 .edit-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--border);
   color: var(--text-primary);
 }
 
 .edit-btn:active {
-  transform: scale(0.94);
+  transform: scale(0.96);
 }
 
 .count {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .unit {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
   margin-left: 2px;
 }
@@ -256,7 +282,7 @@ const onLog = () => {
 .grid-container {
   display: grid;
   grid-template-columns: repeat(v-bind(columns), 1fr);
-  gap: 6px;
+  gap: 5px;
   z-index: 2;
   position: relative;
   width: 100%;
@@ -270,52 +296,37 @@ const onLog = () => {
 
 .grid-dot {
   aspect-ratio: 1;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  pointer-events: none;
-}
-
-.card-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.15;
-  z-index: 1;
+  border-radius: 2px;
+  transition: background-color 120ms linear;
   pointer-events: none;
 }
 
 @media (max-width: 480px) {
   .habit-card {
-    padding: 16px;
-    padding-left: 10px;
-    border-radius: 20px;
+    padding: 14px;
+    padding-left: 8px;
   }
-  
+
   .card-header {
-    margin-bottom: 16px; 
+    margin-bottom: 12px;
   }
-  
+
+  .habit-name,
+  .habit-last {
+    max-width: 110px;
+  }
+
   .habit-name {
-    font-size: 16px;
-    max-width: 100px;
+    font-size: 14px;
   }
 
   .edit-btn {
     width: 32px;
     height: 32px;
   }
-  
+
   .grid-container {
     gap: 4px;
-  }
-  
-  .grid-dot {
-    border-radius: 2px;
   }
 }
 </style>
