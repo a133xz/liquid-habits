@@ -1,23 +1,24 @@
 :root {
-  --c-0: #0a0a0a;
-  --c-1: #141414;
-  --c-2: #2a2a2a;
+  /* Atlas grayscale */
+  --c-0: #ffffff;
+  --c-1: #f7f7f7;
+  --c-2: #dedede;
   --c-3: #999999;
-  --c-4: #f5f5f5;
+  --c-4: #000000;
 
-  --bg-color: var(--c-0);
-  --surface: var(--c-1);
+  --bg-color: var(--c-1);
+  --surface: var(--c-0);
   --border: var(--c-2);
   --text-primary: var(--c-4);
   --text-secondary: var(--c-3);
-  --glass-bg: var(--c-1);
+  --glass-bg: var(--c-0);
   --glass-border: var(--c-2);
-  --glass-highlight: #3a3a3a;
+  --glass-highlight: var(--c-2);
   --accent-color: var(--c-4);
-  --accent-soft: rgba(245, 245, 245, 0.08);
+  --accent-soft: var(--c-1);
   --danger-color: #ff4757;
   --success-color: #2ed573;
-  --on-accent: #0a0a0a;
+  --on-accent: var(--c-0);
   --radius: 6px;
   --radius-lg: 10px;
   --font-family:
@@ -38,7 +39,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   overflow-x: hidden;
-  background: var(--c-0);
+  background: var(--bg-color);
 }
 
 #app {
@@ -60,7 +61,7 @@ body {
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--glass-highlight);
+  background: var(--c-3);
 }
 
 button {

@@ -13,8 +13,8 @@ export default defineConfig({
         name: "Liquid Habits",
         short_name: "Habits",
         description: "Track your habits with style",
-        theme_color: "#0a0a0a",
-        background_color: "#0a0a0a",
+        theme_color: "#f7f7f7",
+        background_color: "#f7f7f7",
         display: "standalone",
         start_url: "/",
         icons: [

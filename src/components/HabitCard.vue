@@ -195,7 +195,7 @@ const onLog = () => {
   justify-content: center;
   font-weight: 700;
   font-size: 14px;
-  color: var(--on-accent);
+  color: #ffffff;
   flex-shrink: 0;
   opacity: 0.95;
 }

@@ -374,7 +374,7 @@ h2 {
 
 .glass-input {
   width: 100%;
-  background: var(--c-0);
+  background: var(--c-1);
   border: 1px solid transparent;
   padding: 12px 14px;
   border-radius: var(--radius);
@@ -392,7 +392,7 @@ h2 {
 
 .glass-input:focus {
   border-color: var(--accent-color);
-  background: var(--c-0);
+  background: var(--c-1);
 }
 
 .field-label {
@@ -413,7 +413,7 @@ h2 {
   width: 40px;
   height: 40px;
   border-radius: var(--radius);
-  background: var(--c-0);
+  background: var(--c-1);
   color: var(--text-primary);
   font-size: 20px;
   line-height: 1;
@@ -430,7 +430,7 @@ h2 {
 
 .hours-input {
   flex: 1;
-  background: var(--c-0);
+  background: var(--c-1);
   border: 1px solid transparent;
   padding: 10px;
   border-radius: var(--radius);
@@ -490,7 +490,7 @@ h2 {
 }
 
 .cancel-btn {
-  background: var(--c-0);
+  background: var(--c-1);
   color: var(--text-secondary);
 }
 
