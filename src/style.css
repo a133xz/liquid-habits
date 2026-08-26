@@ -16,6 +16,7 @@
   --glass-highlight: var(--c-2);
   --accent-color: var(--c-4);
   --accent-soft: var(--c-1);
+  --create-color: #00075f;
   --danger-color: #ff4757;
   --success-color: #2ed573;
   --on-accent: var(--c-0);

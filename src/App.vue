@@ -211,14 +211,14 @@ const exportData = () => {
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0 20px 20px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
   box-sizing: border-box;
 }
 
 @media (max-width: 480px) {
   .app-container {
-    padding: 16px;
+    padding: 0 16px 16px;
     padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
 }
@@ -230,8 +230,8 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: max(20px, env(safe-area-inset-top));
-  padding-bottom: 16px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
+  padding-bottom: 12px;
   margin-bottom: 20px;
   background: var(--bg-color);
   margin-left: -20px;
@@ -324,7 +324,7 @@ main {
 
 .cta-btn {
   margin-top: 20px;
-  background: var(--accent-color);
+  background: var(--create-color);
   color: var(--on-accent);
   padding: 10px 18px;
   border-radius: var(--radius);
@@ -495,7 +495,7 @@ h2 {
 }
 
 .save-btn {
-  background: var(--accent-color);
+  background: var(--create-color);
   color: var(--on-accent);
 }
 
