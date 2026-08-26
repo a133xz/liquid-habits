@@ -11,7 +11,7 @@ export default defineConfig({
       includeAssets: ["vite.svg"],
       manifest: {
         name: "Liquid Habits",
-        short_name: "Habits",
+        short_name: "Liquid Habits",
         description: "Track your habits with style",
         theme_color: "#f7f7f7",
         background_color: "#f7f7f7",
