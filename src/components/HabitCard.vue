@@ -115,6 +115,10 @@ const onLog = () => {
   display: flex;
   align-items: stretch;
   gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -174,9 +178,11 @@ const onLog = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   margin-bottom: 16px;
   z-index: 2;
   position: relative;
+  min-width: 0;
 }
 
 .habit-info {
@@ -184,6 +190,7 @@ const onLog = () => {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  flex: 1;
 }
 
 .habit-icon {
@@ -216,7 +223,6 @@ const onLog = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 160px;
 }
 
 .habit-last {
@@ -226,7 +232,6 @@ const onLog = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 160px;
 }
 
 .habit-actions {
@@ -281,11 +286,12 @@ const onLog = () => {
 
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(v-bind(columns), 1fr);
+  grid-template-columns: repeat(v-bind(columns), minmax(0, 1fr));
   gap: 5px;
   z-index: 2;
   position: relative;
   width: 100%;
+  min-width: 0;
   padding: 0;
   border: none;
   background: transparent;
@@ -296,6 +302,8 @@ const onLog = () => {
 
 .grid-dot {
   aspect-ratio: 1;
+  min-width: 0;
+  min-height: 0;
   border-radius: 2px;
   transition: background-color 120ms linear;
   pointer-events: none;
@@ -309,11 +317,6 @@ const onLog = () => {
 
   .card-header {
     margin-bottom: 12px;
-  }
-
-  .habit-name,
-  .habit-last {
-    max-width: 110px;
   }
 
   .habit-name {

@@ -119,7 +119,6 @@ const exportData = () => {
   <div class="app-container">
     <header>
       <div class="brand">
-        <img class="brand-mark" src="/favicon.png" alt="" width="28" height="28" />
         <h1>Liquid Habits</h1>
       </div>
       <div class="header-actions">
@@ -208,31 +207,33 @@ const exportData = () => {
 
 <style scoped>
 .app-container {
+  flex: 1;
+  min-height: 0;
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 20px 20px;
-  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  padding: 0 20px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 @media (max-width: 480px) {
   .app-container {
-    padding: 0 16px 16px;
-    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    padding: 0 16px;
   }
 }
 
 header {
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
   z-index: 10;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
   padding-bottom: 12px;
-  margin-bottom: 20px;
   background: var(--bg-color);
   margin-left: -20px;
   margin-right: -20px;
@@ -247,7 +248,6 @@ header {
     margin-right: -16px;
     padding-left: 16px;
     padding-right: 16px;
-    margin-bottom: 20px;
   }
 }
 
@@ -257,26 +257,22 @@ h1 {
   color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
   min-width: 0;
-}
-
-.brand-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius);
-  flex-shrink: 0;
-  display: block;
+  flex: 1;
 }
 
 .header-actions {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .icon-btn {
@@ -302,15 +298,37 @@ h1 {
 
 main {
   width: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-top: 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
 
 .habit-grid {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.habit-grid > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 @media (max-width: 480px) {
+  main {
+    padding-top: 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
   .habit-grid {
     gap: 10px;
   }
