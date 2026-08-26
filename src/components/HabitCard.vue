@@ -14,17 +14,38 @@ const emit = defineEmits(['log', 'edit'])
 
 const isMobile = useMediaQuery('(max-width: 480px)')
 const baseColumns = computed(() => isMobile.value ? 10 : 15)
+const minColumns = 4
 const rows = 7
+// Absolute ceiling for a "full" grid (raise later when ready)
+const GRID_HOUR_LIMIT = 250
+// Early progress sits ~1/4 on a smaller soft capacity (15h → capacity 60)
+const TARGET_FILL = 0.25
 
 const filledCount = computed(() => props.habit.logs.length)
 
-// Grow columns once the grid would be full so squares shrink and never stay completely filled
-const columns = computed(() => {
-  const base = baseColumns.value
-  const minDots = Math.max(base * rows, filledCount.value + 1)
-  return Math.max(base, Math.ceil(minDots / rows))
+// Soft hour-capacity grows with you, then hard-caps at GRID_HOUR_LIMIT
+const softCapacity = computed(() => {
+  const hours = filledCount.value
+  if (hours <= 0) return GRID_HOUR_LIMIT
+  return Math.min(GRID_HOUR_LIMIT, Math.ceil(hours / TARGET_FILL))
 })
+
+// Smaller capacity → fewer columns → bigger dots (a physically smaller grid)
+const columns = computed(() => {
+  if (filledCount.value <= 0) return baseColumns.value
+  const t = softCapacity.value / GRID_HOUR_LIMIT
+  const base = baseColumns.value
+  return Math.max(minColumns, Math.round(minColumns + (base - minColumns) * t))
+})
+
 const totalDots = computed(() => columns.value * rows)
+
+const visualFilled = computed(() => {
+  const hours = filledCount.value
+  if (hours <= 0) return 0
+  const ratio = Math.min(hours / softCapacity.value, 1)
+  return Math.round(ratio * totalDots.value)
+})
 
 const color = computed(() => props.habit.color || '#2ed573')
 
@@ -101,7 +122,7 @@ const onLog = () => {
           :key="i"
           class="grid-dot"
           :style="{
-            backgroundColor: i <= filledCount ? color : 'var(--accent-soft)',
+            backgroundColor: i <= visualFilled ? color : 'var(--accent-soft)',
           }"
         ></div>
       </button>
